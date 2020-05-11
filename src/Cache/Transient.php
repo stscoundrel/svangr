@@ -86,7 +86,7 @@ class Transient implements PSR16\CacheInterface
     {
         $key = $this->get_namespaced_key($key);
 
-        $transient = \get_transient( $key );
+        $transient = \get_transient($key);
 
         $value = $transient !== false ? $transient : $default;
 
@@ -107,7 +107,7 @@ class Transient implements PSR16\CacheInterface
 
         $ttl = $ttl ?? $this->expire;
 
-        $transient = \set_transient($key, $value, $ttl );
+        $transient = \set_transient($key, $value, $ttl);
 
         return $transient;
     }
@@ -121,7 +121,7 @@ class Transient implements PSR16\CacheInterface
     public function delete($key)
     {
         $key       = $this->get_namespaced_key($key);
-        $transient = \delete_transient( $key );
+        $transient = \delete_transient($key);
 
         return $transient;
     }
@@ -132,10 +132,11 @@ class Transient implements PSR16\CacheInterface
      * @param string $key of transient.
      * @return bool $result true/false.
      */
-    public function has($key) {
+    public function has($key)
+    {
         $key = $this->get_namespaced_key($key);
 
-        $transient = \get_transient( $key );
+        $transient = \get_transient($key);
 
         $result = $transient ? true : false;
 
@@ -160,14 +161,14 @@ class Transient implements PSR16\CacheInterface
 
         $cache_transient = '_transient_' . $this->namespace . '_';
 
-        $transients = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE '$cache_transient'" );
+        $transients = $wpdb->get_results("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '$cache_transient'");
 
-        foreach( $transients as $transient ) :
+        foreach ($transients as $transient) :
             // Parse original transient key without WP fluff & namespace.
             $key = str_replace('_transient_' . $this->namespace, '', $transient->option_namne);
-            $result = $this->delete( $key );
+            $result = $this->delete($key);
 
-            if( $result === false ) :
+            if ($result === false) :
                 $all_cleared = false;
             endif;
         endforeach;
@@ -185,8 +186,8 @@ class Transient implements PSR16\CacheInterface
     {
         $results = array();
 
-        foreach($keys as $key) :
-            $results[ $key ] = $this->get( $key, $default );
+        foreach ($keys as $key) :
+            $results[ $key ] = $this->get($key, $default);
         endforeach;
 
         return $results;
@@ -202,10 +203,10 @@ class Transient implements PSR16\CacheInterface
     {
         $all_success = true;
 
-        foreach($values as $key => $value) :
-            $result = $this->set( $key, $value, $ttl );
+        foreach ($values as $key => $value) :
+            $result = $this->set($key, $value, $ttl);
 
-            if( $result === false ) :
+            if ($result === false) :
                 $all_success = false;
             endif;
         endforeach;
@@ -223,10 +224,10 @@ class Transient implements PSR16\CacheInterface
     {
         $all_deleted = true;
 
-        foreach($keys as $key) :
+        foreach ($keys as $key) :
             $result = $this->delete($key);
 
-            if( $result === false ) :
+            if ($result === false) :
                 $all_deleted = false;
             endif;
         endforeach;
@@ -263,7 +264,8 @@ class Transient implements PSR16\CacheInterface
         endif;
 
         // Abides WP requirements.
-        if(strlen($key) > $this->allowed_key_length) ) :
+        if (strlen($key) > $this->allowed_key_length) :
+            )
             throw new TooLongKeyException();
         endif;
     }
