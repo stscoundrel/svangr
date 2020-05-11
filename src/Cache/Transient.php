@@ -38,6 +38,13 @@ class Transient implements PSR16\CacheInterface
     protected $allowed_key_length;
 
     /**
+     * Default transient expire time if not given.
+     *
+     * @var int.
+     */
+    const DEFAULT_EXPIRE = 3600;
+
+    /**
      * General WP transient length limit.
      * Used to adjust cache key length with namespace.
      *
@@ -67,9 +74,8 @@ class Transient implements PSR16\CacheInterface
      *
      * @return mixed The value of the item from the cache, or $default in case of cache miss.
      */
-    public function get($key, $default = null) {
-        $this->checkKeyValidity($key);
-
+    public function get($key, $default = null)
+    {
         $key = $this->get_namespaced_key($key);
 
         $transient = \get_transient( $key );
@@ -80,39 +86,60 @@ class Transient implements PSR16\CacheInterface
     }
 
     /**
-     * Persists data in the cache, uniquely referenced by a key with an optional expiration TTL time.
+     * Delete transient by key.
      *
-     * @param string                 $key   The key of the item to store.
-     * @param mixed                  $value The value of the item to store, must be serializable.
-     * @param null|int|\DateInterval $ttl   Optional. The TTL value of this item. If no value is sent and
-     *                                      the driver supports TTL then the library may set a default value
-     *                                      for it or let the driver take care of that.
-     *
-     * @return bool True on success and false on failure.
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
-     *   MUST be thrown if the $key string is not a legal value.
+     * @param string $key of transient.
+     * @param string $value to be stored.
+     * @param string $ttl expiration of transient.
+     * @return bool $transient true/false.
      */
-    public function set($key, $value, $ttl = null);
+    public function set($key, $value, $ttl = null)
+    {
+        $key = $this->get_namespaced_key($key);
+
+        $ttl = $ttl ?? self::DEFAULT_EXPIRE;
+
+        $transient = \set_transient($key, $value, $ttl );
+
+        return $transient;
+    }
 
     /**
-     * Delete an item from the cache by its unique key.
+     * Delete transient by key.
      *
-     * @param string $key The unique cache key of the item to delete.
-     *
-     * @return bool True if the item was successfully removed. False if there was an error.
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
-     *   MUST be thrown if the $key string is not a legal value.
+     * @param string $key of transient.
+     * @return bool $transient true/false.
      */
-    public function delete($key);
+    public function delete($key)
+    {
+        $key       = $this->get_namespaced_key($key);
+        $transient = \delete_transient( $key );
+
+        return $transient;
+    }
+
+    /**
+     * Checks transient existanxe by key.
+     *
+     * @param string $key of transient.
+     * @return bool $result true/false.
+     */
+    public function has($key) {
+        $key = $this->get_namespaced_key($key);
+
+        $transient = \get_transient( $key );
+
+        $result = $transient ? true : false;
+
+        return $result;
+    }
 
     /**
      * Wipes clean the entire cache's keys.
      *
      * @return bool True on success and false on failure.
      */
-    public function clear();
+    abstract public function clear();
 
     /**
      * Obtains multiple cache items by their unique keys.
@@ -126,7 +153,7 @@ class Transient implements PSR16\CacheInterface
      *   MUST be thrown if $keys is neither an array nor a Traversable,
      *   or if any of the $keys are not a legal value.
      */
-    public function getMultiple($keys, $default = null);
+    abstract public function getMultiple($keys, $default = null);
 
     /**
      * Persists a set of key => value pairs in the cache, with an optional TTL.
@@ -142,7 +169,7 @@ class Transient implements PSR16\CacheInterface
      *   MUST be thrown if $values is neither an array nor a Traversable,
      *   or if any of the $values are not a legal value.
      */
-    public function setMultiple($values, $ttl = null);
+    abstract public function setMultiple($values, $ttl = null);
 
     /**
      * Deletes multiple cache items in a single operation.
@@ -155,24 +182,23 @@ class Transient implements PSR16\CacheInterface
      *   MUST be thrown if $keys is neither an array nor a Traversable,
      *   or if any of the $keys are not a legal value.
      */
-    public function deleteMultiple($keys);
+    abstract public function deleteMultiple($keys);
 
     /**
-     * Determines whether an item is present in the cache.
+     * Gets namespaced key.
+     * Transient strategy appends namespace string before DB saving.
      *
-     * NOTE: It is recommended that has() is only to be used for cache warming type purposes
-     * and not to be used within your live applications operations for get/set, as this method
-     * is subject to a race condition where your has() will return true and immediately after,
-     * another script can remove it making the state of your app out of date.
-     *
-     * @param string $key The cache item key.
-     *
-     * @return bool
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
-     *   MUST be thrown if the $key string is not a legal value.
+     * @param string $key to modify.
+     * @return string $key which was modified.
      */
-    public function has($key);
+    protected function get_namespaced_key(string $key) : string
+    {
+        $this->checkKeyValidity($key);
+        
+        $key = $this->namespace . '_' . $key;
+
+        return $key;
+    }
 
     /**
      * Check if given key is valid.
@@ -190,19 +216,5 @@ class Transient implements PSR16\CacheInterface
         if(strlen($key) > $this->allowed_key_length) ) :
             throw new TooLongKeyException();
         endif;
-    }
-
-    /**
-     * Gets namespaced key.
-     * Transient strategy appends namespace string before DB saving.
-     *
-     * @param string $key to modify.
-     * @return string $key which was modified.
-     */
-    protected function get_namespaced_key(string $key) : string
-    {
-        $key = $this->namespace . '_' . $key;
-
-        return $key;
     }
 }
