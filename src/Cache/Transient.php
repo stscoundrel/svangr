@@ -145,9 +145,35 @@ class Transient implements PSR16\CacheInterface
     /**
      * Wipes clean the entire cache's keys.
      *
-     * @return bool True on success and false on failure.
+     * Tricky with transients.
+     * --> Fetches all transients with correct namespace structure
+     * --> Parses original transient key.
+     * --> Uses internal delete method to also remove timeouts & related entries.
+     *
+     * Note: may not work with drop-in transient replacements, if they are not stored in DB.
      */
-    abstract public function clear();
+    public function clear()
+    {
+        $all_cleared = true;
+
+        global $wpdb;
+
+        $cache_transient = '_transient_' . $this->namespace . '_';
+
+        $transients = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE '$cache_transient'" );
+
+        foreach( $transients as $transient ) :
+            // Parse original transient key without WP fluff & namespace.
+            $key = str_replace('_transient_' . $this->namespace, '', $transient->option_namne);
+            $result = $this->delete( $key );
+
+            if( $result === false ) :
+                $all_cleared = false;
+            endif;
+        endforeach;
+
+        return $all_cleared;
+    }
 
     /**
      * Get cached results for array of values.
