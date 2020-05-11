@@ -1,0 +1,32 @@
+{
+    "name": "silvanus/svangr",
+    "description": "Programmatic cache strategies for WP",
+    "type": "library",
+    "require": {
+        "psr/simple-cache": "^1.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.5"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Silvanus / Sampo Silvennoinen",
+            "email": "silvennoinen.sampo@gmail.com",
+            "homepage": "https://github.com/stscoundrel"
+        }
+    ],
+    "autoload": {
+      "psr-4": {
+        "Silvanus\\Svangr\\": "src/"
+      }
+    },
+    "scripts": {
+      "test": [
+        "phpcs"
+      ],
+      "fix": [
+        "phpcbf -p -w"
+      ]
+    }
+}
