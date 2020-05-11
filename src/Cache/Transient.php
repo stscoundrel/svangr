@@ -31,6 +31,13 @@ class Transient implements PSR16\CacheInterface
     protected $namespace;
 
     /**
+     * Expiration for cache.
+     *
+     * @var int.
+     */
+    protected $expire;
+
+    /**
      * Allowed max for transient keys.
      *
      * @var int.
@@ -57,11 +64,12 @@ class Transient implements PSR16\CacheInterface
      *
      * @param string $namespace of cache.
      */
-    public function __construct(string $namespace)
+    public function __construct(string $namespace, int $expire = self::DEFAULT_EXPIRE)
     {
         $this->checkKeyValidity($namespace);
 
         $this->namespace = $namespace;
+        $this->expire    = $expire;
 
         $this->allowed_key_length = self::WP_TRANSIENT_MAX - strlen($namespace);
     }
@@ -97,7 +105,7 @@ class Transient implements PSR16\CacheInterface
     {
         $key = $this->get_namespaced_key($key);
 
-        $ttl = $ttl ?? self::DEFAULT_EXPIRE;
+        $ttl = $ttl ?? $this->expire;
 
         $transient = \set_transient($key, $value, $ttl );
 
