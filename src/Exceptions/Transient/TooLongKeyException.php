@@ -7,12 +7,12 @@
 
 namespace Silvanus\Svangr\Exceptions\Transient;
 
-use \Svangr\Exception\InvalidArgumentException;
+use \Exception;
 
 /**
  * Handle invalid arguments in cache.
  */
-class TooLongKeyException extends InvalidArgumentException
+class TooLongKeyException extends Exception
 {
     protected $message = 'Too long key provided for transient. WP required keys to be less than 172 characters.';
 }
