@@ -72,7 +72,6 @@ class Transient implements PSR16\CacheInterface
 
         $this->namespace = $namespace;
         $this->expire    = $expire;
-
     }
 
     /**
