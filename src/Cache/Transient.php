@@ -162,11 +162,12 @@ class Transient implements PSR16\CacheInterface
 
         $cache_transient = '_transient_' . $this->namespace . '_';
 
-        $transients = $wpdb->get_results("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '$cache_transient'");
+        $transients = $wpdb->get_results("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '%$cache_transient%'");
 
         foreach ($transients as $transient) :
             // Parse original transient key without WP fluff & namespace.
-            $key = str_replace('_transient_' . $this->namespace, '', $transient->option_namne);
+            $key = str_replace('_transient_' . $this->namespace . '_', '', $transient->option_name);
+
             $result = $this->delete($key);
 
             if ($result === false) :
