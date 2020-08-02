@@ -5,7 +5,7 @@
  * @package Svangr.
  */
 
-namespace Silvanus\Svangr;
+namespace Silvanus\Svangr\Cache;
 
 // Contracts.
 use \Psr\SimpleCache as PSR16;
@@ -66,12 +66,13 @@ class Transient implements PSR16\CacheInterface
      */
     public function __construct(string $namespace, int $expire = self::DEFAULT_EXPIRE)
     {
+        $this->allowed_key_length = self::WP_TRANSIENT_MAX - strlen($namespace);
+
         $this->checkKeyValidity($namespace);
 
         $this->namespace = $namespace;
         $this->expire    = $expire;
 
-        $this->allowed_key_length = self::WP_TRANSIENT_MAX - strlen($namespace);
     }
 
     /**
@@ -265,7 +266,6 @@ class Transient implements PSR16\CacheInterface
 
         // Abides WP requirements.
         if (strlen($key) > $this->allowed_key_length) :
-            )
             throw new TooLongKeyException();
         endif;
     }
